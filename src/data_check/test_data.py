@@ -5,7 +5,7 @@ import scipy.stats
 
 def test_column_names(data):
 
-    expected_colums = [
+    expected_columns = [
         "id",
         "name",
         "host_id",
@@ -27,7 +27,7 @@ def test_column_names(data):
     these_columns = data.columns.values
 
     # This also enforces the same order
-    assert list(expected_colums) == list(these_columns)
+    assert list(expected_columns) == list(these_columns)
 
 
 def test_neighborhood_names(data):
@@ -60,6 +60,23 @@ def test_similar_neigh_distrib(data: pd.DataFrame, ref_data: pd.DataFrame, kl_th
     assert scipy.stats.entropy(dist1, dist2, base=2) < kl_threshold
 
 
-########################################################
-# Implement here test_row_count and test_price_range   #
-########################################################
+def test_row_count(data):
+    assert 15000 < data.shape[0] < 1000000
+
+
+def test_price_range(df: pd.DataFrame, min_price: int, max_price: int):
+    """Assert all price values are within min_price and max_price."""
+    assert df["price"].between(min_price, max_price).all()
+
+data = pd.read_csv("./clean_sample.csv")
+ref_data = pd.read_csv("reference_clean_sample.csv")
+test_similar_neigh_distrib(data, ref_data, kl_threshold=0.2)
+
+# Run tests
+test_column_names(data)
+test_neighborhood_names(data)
+test_proper_boundaries(data)
+test_row_count(data)
+test_price_range(data, min_price=10, max_price=350)
+#test_similar_neigh_distrib(data, #ref_data, kl_threshold=0.2)
+print("All checks passed!")

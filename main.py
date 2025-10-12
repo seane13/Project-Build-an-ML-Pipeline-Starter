@@ -37,8 +37,20 @@ def go(config: DictConfig):
 
         if "download" in active_steps:
             # Download file and load in W&B
+            # _ = mlflow.run(
+            #     f"{config['main']['components_repository']}/get_data",
+            #     "main",
+            #     version='main',
+            #     env_manager="conda",
+            #     parameters={
+            #         "sample": config["etl"]["sample"],
+            #         "artifact_name": "sample.csv",
+            #         "artifact_type": "raw_data",
+            #         "artifact_description": "Raw file as downloaded"
+            #     },
+            # )
             _ = mlflow.run(
-                f"{config['main']['components_repository']}/get_data",
+                f"{config['main']['components_repository']}#components/get_data",
                 "main",
                 version='main',
                 env_manager="conda",
@@ -50,17 +62,43 @@ def go(config: DictConfig):
                 },
             )
 
+
         if "basic_cleaning" in active_steps:
-            ##################
-            # Implement here #
-            ##################
-            pass
+
+            def basic_cleaning(input_path: str, output_path: str, min_price: int, max_price: int) -> None:
+                """
+                Cleans the Airbnb data by removing outliers and missing values.
+
+                Args:
+                    input_path (str): Path to raw CSV.
+                    output_path (str): Path to save cleaned CSV.
+                    min_price (int): Minimum allowed price.
+                    max_price (int): Maximum allowed price.
+                """
+                df = pd.read_csv(input_path)
+                df = df[(df['price'] >= min_price) & (df['price'] <= max_price)]
+                df = df.dropna()
+                df.to_csv(output_path, index=False)
+
+# Load params from config.yaml in main.py!
+
 
         if "data_check" in active_steps:
-            ##################
-            # Implement here #
-            ##################
-            pass
+            _ = mlflow.run(
+                f"{config['main']['components_repository']}#src/data_check",
+                "main",
+                version="main",
+                env_manager="conda",
+                parameters={
+                    "csv": "clean_sample.csv:latest",
+                    "ref": "clean_sample.csv:reference",
+                    "kl_threshold": config["data_check"]["kl_threshold"],
+                    "min_price": config["data_check"]["min_price"],
+                    "max_price": config["data_check"]["max_price"]
+                }
+            )
+
+
 
         if "data_split" in active_steps:
             ##################
