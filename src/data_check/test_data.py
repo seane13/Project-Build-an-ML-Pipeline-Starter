@@ -3,6 +3,7 @@ import numpy as np
 import scipy.stats
 import sys
 import os
+import wandb
 
 def test_column_names(data: pd.DataFrame):
     expected_columns = [
@@ -69,15 +70,20 @@ for idx, arg in enumerate(sys.argv):
     elif arg in ("--kl_threshold", "-kl_threshold"):
         kl_threshold = float(sys.argv[idx+1])
 
-if csv_path and os.path.exists(csv_path):
-    data = pd.read_csv(csv_path)
-else:
-    raise FileNotFoundError(f"Could not find file {csv_path}")
+run = wandb.init(project="nyc_airbnb", job_type="data_check")
 
-if ref_path and os.path.exists(ref_path):
-    ref_data = pd.read_csv(ref_path)
+if csv_path:
+    local_csv = run.use_artifact(csv_path).file()
+    data = pd.read_csv(local_csv)
 else:
-    raise FileNotFoundError(f"Could not find reference file {ref_path}")
+    raise ValueError("csv_path argument missing or invalid")
+
+if ref_path:
+    local_ref = run.use_artifact(ref_path).file()
+    ref_data = pd.read_csv(local_ref)
+else:
+    raise ValueError("ref_path argument missing or invalid")
+
 
 if min_price is None or max_price is None or kl_threshold is None:
     raise ValueError("min_price, max_price, and kl_threshold must be provided")
