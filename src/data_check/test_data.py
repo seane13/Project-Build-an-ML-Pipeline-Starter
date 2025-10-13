@@ -30,8 +30,12 @@ def test_column_names(data):
     assert list(expected_columns) == list(these_columns)
 
 
-def test_neighborhood_names(data):
+def test_neighborhood_names(data: pd.DataFrame) -> None:
+    """Test if neighborhood names are within expected values.
 
+    Args:
+        data: Input DataFrame to test
+    """
     known_names = ["Bronx", "Brooklyn", "Manhattan", "Queens", "Staten Island"]
 
     neigh = set(data['neighbourhood_group'].unique())
@@ -49,13 +53,22 @@ def test_proper_boundaries(data: pd.DataFrame):
     assert np.sum(~idx) == 0
 
 
-def test_similar_neigh_distrib(data: pd.DataFrame, ref_data: pd.DataFrame, kl_threshold: float):
+def test_similar_neigh_distrib(data: pd.DataFrame, ref_data: pd.DataFrame, kl_threshold: float) -> None:
     """
     Apply a threshold on the KL divergence to detect if the distribution of the new data is
     significantly different than that of the reference dataset
+
+    Args:
+        data: Current dataset to test
+        ref_data: Reference dataset to compare against
+        kl_threshold: Maximum allowed KL divergence threshold
+
+    Raises:
+        AssertionError: If KL divergence exceeds the threshold
     """
-    dist1 = data['neighbourhood_group'].value_counts().sort_index()
-    dist2 = ref_data['neighbourhood_group'].value_counts().sort_index()
+    # Use newer pandas value_counts with normalize=True for probability distribution
+    dist1 = data['neighbourhood_group'].value_counts(normalize=True).sort_index()
+    dist2 = ref_data['neighbourhood_group'].value_counts(normalize=True).sort_index()
 
     assert scipy.stats.entropy(dist1, dist2, base=2) < kl_threshold
 
