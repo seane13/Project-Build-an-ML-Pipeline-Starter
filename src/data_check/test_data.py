@@ -48,4 +48,45 @@ def test_row_count(data: pd.DataFrame):
 
 def test_price_range(df: pd.DataFrame, min_price: float, max_price: float):
     # Assert all price values are within min_price and max_price.
-    assert
+    assert df["price"].between(min_price, max_price).all()
+
+# --- Parse CLI arguments for input files and thresholds ---
+csv_path = None
+ref_path = None
+min_price = None
+max_price = None
+kl_threshold = None
+
+for idx, arg in enumerate(sys.argv):
+    if arg in ("--csv", "-csv"):
+        csv_path = sys.argv[idx+1]
+    elif arg in ("--ref", "-ref"):
+        ref_path = sys.argv[idx+1]
+    elif arg in ("--min_price", "-min_price"):
+        min_price = float(sys.argv[idx+1])
+    elif arg in ("--max_price", "-max_price"):
+        max_price = float(sys.argv[idx+1])
+    elif arg in ("--kl_threshold", "-kl_threshold"):
+        kl_threshold = float(sys.argv[idx+1])
+
+if csv_path and os.path.exists(csv_path):
+    data = pd.read_csv(csv_path)
+else:
+    raise FileNotFoundError(f"Could not find file {csv_path}")
+
+if ref_path and os.path.exists(ref_path):
+    ref_data = pd.read_csv(ref_path)
+else:
+    raise FileNotFoundError(f"Could not find reference file {ref_path}")
+
+if min_price is None or max_price is None or kl_threshold is None:
+    raise ValueError("min_price, max_price, and kl_threshold must be provided")
+
+# --- Run tests with inputs from CLI ---
+test_column_names(data)
+test_neighborhood_names(data)
+test_proper_boundaries(data)
+test_row_count(data)
+test_price_range(data, min_price=min_price, max_price=max_price)
+test_similar_neigh_distrib(data, ref_data, kl_threshold=kl_threshold)
+print("All checks passed!")
