@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import scipy.stats
 import sys
-import os
 import wandb
 
 def test_column_names(data: pd.DataFrame):
@@ -47,7 +46,7 @@ def test_similar_neigh_distrib(data: pd.DataFrame, ref_data: pd.DataFrame, kl_th
 def test_row_count(data: pd.DataFrame):
     assert 15000 < data.shape[0] < 1000000
 
-def test_price_range(df: pd.DataFrame, min_price: float, max_price: float):
+def check_price_range(df: pd.DataFrame, min_price: float, max_price: float):
     # Assert all price values are within min_price and max_price.
     assert df["price"].between(min_price, max_price).all()
 
@@ -93,6 +92,6 @@ test_column_names(data)
 test_neighborhood_names(data)
 test_proper_boundaries(data)
 test_row_count(data)
-test_price_range(data, min_price=min_price, max_price=max_price)
+check_price_range(data, min_price=min_price, max_price=max_price)
 test_similar_neigh_distrib(data, ref_data, kl_threshold=kl_threshold)
 print("All checks passed!")
