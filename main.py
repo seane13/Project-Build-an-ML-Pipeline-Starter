@@ -89,7 +89,7 @@ def go(config: DictConfig):
                 json.dump(dict(config["modeling"]["random_forest"]), fp)
 
             _ = mlflow.run(
-                "./src/train_random_forest",
+                "https://github.com/seane13/Project-Build-an-ML-Pipeline-Starter#components/train_random_forest",
                 "main",
                 parameters={
                     "trainval_artifact": "trainval_data.csv:latest",
