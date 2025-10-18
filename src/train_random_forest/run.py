@@ -71,6 +71,23 @@ def go(args):
     r_squared = sk_pipe.score(X_val, y_val)
     y_pred = sk_pipe.predict(X_val)
     mae = mean_absolute_error(y_val, y_pred)
+    run.summary['r2'] = r_squared
+    run.summary['mae'] = mae
+    run.log({"mae": mae, "r2": r_squared})
+
+    # Plot and log feature importance as image
+    fig_feat_imp = plot_feature_importance(sk_pipe, processed_features)
+    run.log({"feature_importance": wandb.Image(fig_feat_imp)})
+
+    # --- New: Log feature importance as WandB Table ---
+    feat_imp = sk_pipe["random_forest"].feature_importances_[:len(processed_features)-1]
+    nlp_importance = sum(sk_pipe["random_forest"].feature_importances_[len(processed_features)-1:])
+    feat_imp = np.append(feat_imp, nlp_importance)
+    feature_names = np.array(processed_features)
+    sorted_idx = np.argsort(feat_imp)[::-1]
+    table_data = [[str(feature_names[i]), float(feat_imp[i])] for i in sorted_idx]
+    feature_table = wandb.Table(data=table_data, columns=["feature", "importance"])
+    run.log({"feature_importance_table": feature_table})
 
     logger.info(f"Score: {r_squared}")
     logger.info(f"MAE: {mae}")
