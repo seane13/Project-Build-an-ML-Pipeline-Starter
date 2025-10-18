@@ -113,18 +113,6 @@ def go(args):
     artifact.add_dir('random_forest_dir')
     run.log_artifact(artifact)
 
-    # Plot feature importance
-    fig_feat_imp = plot_feature_importance(sk_pipe, processed_features)
-
-    # Save metrics to W&B summary
-    run.summary['r2'] = r_squared
-    run.summary['mae'] = mae
-
-    # Upload feature importance visualization
-    run.log({
-        "feature_importance": wandb.Image(fig_feat_imp),
-    })
-
 def plot_feature_importance(pipe, feat_names):
     feat_imp = pipe["random_forest"].feature_importances_[:len(feat_names)-1]
     nlp_importance = sum(pipe["random_forest"].feature_importances_[len(feat_names)-1:])
